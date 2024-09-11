@@ -15,3 +15,8 @@ Don't want to use Newton-Raphson with Big Data because of the complexity runtime
 Generalized inverse. Look it up. Linear Algebra.
 
 Log(products) vs sum(logs) is mathematically the same but not the same numerically due to it producing very small numbers that fall under the numerical tolerance. When dealing with Big Data, use sum(logs), don't use Log(products)
+
+
+```{r, echo = TRUE}
+print("hello world")
+```
