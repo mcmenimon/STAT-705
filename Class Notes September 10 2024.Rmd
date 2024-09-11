@@ -1,0 +1,17 @@
+---
+title: "STAT 705 10 September 2024"
+output: pdf_document
+date: "2024-09-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Newton-Raphson uses two conditions in the while loop because although the algorithm has good convergence properties, it could fail to converge under pathological conditions, so the while loops kills it after a while.
+Newton-Raphson is O(n^3)
+Don't want to use Newton-Raphson with Big Data because of the complexity runtime.
+
+Generalized inverse. Look it up. Linear Algebra.
+
+Log(products) vs sum(logs) is mathematically the same but not the same numerically due to it producing very small numbers that fall under the numerical tolerance. When dealing with Big Data, use sum(logs), don't use Log(products)
