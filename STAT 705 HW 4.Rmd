@@ -1,0 +1,56 @@
+---
+title: "STAT 705 HW 4"
+author: "John McMenimon"
+date: "2024-09-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 2.1.
+We are asked to find the MLE of the Cauchy($\theta,1) distribution, which is analytically intractable. Thus, the usage of numerical algorithms to approximate it is required. 
+
+## 2.1.a.
+The log-likelihood for the Cauchy($\theta,1) distribution is given by:
+l($\theta,x) = -nlog($\pi) - $\sum(log(1 + (x - $\theta)^2))
+```{r, echo = TRUE}
+#Values from Cauchy(theta,1) distribution
+cauchy_vector <- c(1.77,-0.23,2.76,3.80,3.47,56.75,-1.34,4.24,-2.44,3.29,3.71,-2.40,4.53,-0.07,-1.05,-13.87,-2.53,-1.75,0.27,43.21)
+
+#Length and mean of Cauchy value vector
+n <- length(cauchy_vector)
+avg <- mean(cauchy_vector)
+theta <- median(cauchy_vector)
+
+#log-likelihood of Cauchy(theta, 1) distribution
+ll <- lapply(cauchy_vector, function(x) -n * log(pi) - sum(log(1 + (x - theta)^2)))
+#Plot of log-likelihood of Cauchy(theta,1)
+plot(cauchy_vector, ll)
+#Is this right?
+```
+
+```{r, echo = TRUE}
+library(NLRoot)
+
+starting_points <- c(-11,-1,0,1.5,4,4.7,7,8,38,avg)
+for (starting_point in starting_points){
+  newton(rcauchy(n,theta,1),ll,starting_point)
+}
+
+```
+
+## 2.1.b.
+Bisection method for finding the MLE
+```{r, echo = TRUE}
+BFfzero(ll,-1,1)
+
+```
+
+## 2.1.d.
+Secant method for finding the MLE
+```{r, echo = TRUE}
+SMfzero(ll, -2, -1)
+
+```
