@@ -35,12 +35,43 @@ llprime <- function(x){sum((2*(x - theta))/(1 + (x - theta)^2))}
 
 ```{r, echo = TRUE}
 library(NLRoot)
+library(cmna)
 
 starting_points <- c(-11,-1,0,1.5,4,4.7,7,8,38,avg)
-#for (starting_point in starting_points){
-#  newton(rcauchy(n,theta,1),ll,starting_point)
-#}
 
+```
+
+```{r, echo = TRUE}
+Gradmat<-function(parvec, infcn, eps = 1e-06)
+{
+# Function to calculate the difference-quotient
+# approx gradient (matrix) of an arbitrary input
+# (vector) function "infcn" at "parvec"
+  dd = length(parvec)
+  aa = length(infcn(parvec))
+  epsmat = (diag(dd) * eps)/2
+  gmat = array(0, dim = c(aa, dd))
+  for(i in 1:dd){
+    gmat[, i] <- (infcn(parvec + epsmat[, i]) -
+                    infcn(parvec - epsmat[, i]))/eps}
+  if(aa > 1) gmat else c(gmat)
+}
+
+NR.MLE<-function(par.0, infcn,it.max=25, tol = 1e-05, eps=1e-06){
+  gradfunc = function(x) Gradmat(x, infcn, eps)
+  hessfunc = function(x) Gradmat(x, gradfunc, eps)
+  oldpar = par.0
+  newpar <- oldpar - solve(hessfunc(oldpar), gradfunc(oldpar))
+  it <- 1
+  while(it < it.max & sqrt(sum((newpar - oldpar)^2)) >tol){
+    oldpar <- newpar
+    newpar <- oldpar - solve(hessfunc(oldpar), gradfunc(oldpar))
+    it <- it + 1
+    }
+  list(nstep = it, initial = par.0, final = newpar,fval = infcn(newpar))}
+
+
+#
 ```
 
 ## 2.1.b.
@@ -49,10 +80,127 @@ Bisection method for finding the MLE
 BFfzero(llprime,-1,1)
 
 ```
+## 2.1.c.
+Fixed point method for finding the MLE
+```{r, echo = TRUE}
+library(SQUAREM)
+fpiter(-1,ll,llprime)
+
+
+```
 
 ## 2.1.d.
 Secant method for finding the MLE
 ```{r, echo = TRUE}
 SMfzero(llprime, -2, -1)
 
+SMfzero(llprime, -3, 3)
+```
+
+## 2.1.e.
+Compare runtime speeds for the various algorithms
+```{r, echo = TRUE}
+#rt for Newton-Raphson
+rt <- proc.time()
+NR.MLE(starting_point,ll)
+proc.time() - rt
+
+#rt for bisection method
+rt <- proc.time()
+BFfzero(llprime,-1,1)
+proc.time() - rt
+
+#rt for fixed point iterations method
+rt <- proc.time()
+fpiter(-1,ll,llprime)
+proc.time() - rt
+
+#rt for secant method
+rt <- proc.time()
+SMfzero(llprime, -3, 3)
+proc.time() - rt
+```
+
+Now compare the runtime speeds for 20 Normal($\theta, 1) samples
+```{r, echo = TRUE}
+normal_samples <- rnorm(20,theta,1)
+n <- length(normal_samples)
+theta <- mean(normal_samples)
+#Need to find the log-likelihood and its derivative for N(theta,1)
+ll_normal <- function(x) {-0.5 * (n*theta^2 - 2*theta*sum(x))}
+ll_normal_prime <- function(x) {-n*theta + sum(x)}
+
+#rt for Newton-Raphson
+rt <- proc.time()
+#NR.MLE(normal_samples,ll_normal)
+proc.time() - rt
+
+#rt for bisection method
+rt <- proc.time()
+BFfzero(ll_normal_prime,-1,1)
+proc.time() - rt
+
+#rt for fixed point iterations method
+rt <- proc.time()
+#fpiter(-1,ll_normal,ll_normal_prime)
+proc.time() - rt
+
+#rt for secant method
+rt <- proc.time()
+SMfzero(ll_normal_prime, -3, 3)
+proc.time() - rt
+```
+
+# 2.2.
+Now, we have the function f(x) = (1 - cos(x - $\theta))/2$\pi
+
+## 2.2.a.
+```{r, echo = TRUE}
+#Data generated from above function 
+data <- c(3.91,4.85,2.28,4.06,3.70,4.04,5.46,3.53,2.28,1.96,2.53,3.88,2.22,3.47,4.82,2.46, 2.99,2.54, 0.52, 2.50)
+
+#log-likelihood of given function. We wish to estimate theta
+ll <- function(theta) {sum(log(1 - cos(data - theta)))}
+llprime <- function(theta) {-sum((sin(x - theta))/(1 - cos(data - theta)))}
+
+
+#Plot of log-likelihood for -pi < theta < pi
+plot(seq(-pi,pi,(2*pi)/200),unlist(lapply(seq(-pi,pi, (2*pi)/200),ll)))
+
+```
+
+## 2.2.b.
+The method of moments is theta = arcsin(pi - avg(x))
+```{r, echo = TRUE}
+avg <- mean(data)
+method_of_moments <- asin(pi - avg)
+print(method_of_moments)
+```
+
+## 2.2.c.
+```{r, echo = TRUE}
+NR.MLE(method_of_moments,ll)
+
+NR.MLE(-2.7,ll)
+
+NR.MLE(2.7,ll)
+
+```
+
+## 2.2.d.
+I do not understand this part.
+```{r, echo = TRUE}
+for (value in seq(-pi, pi, (2*pi)/200)){
+  print(NR.MLE(value,ll))
+}
+
+```
+
+
+## 2.2.e.
+Find two nearly identical numbers for which the Newton-Raphson algorithm converges to two different solutions. Here, we want to look at the above plot to find a local maxima and pick two values near its peak so that the algorithm rolls into two different local minima. Theta of approximately 2.2 and 2.25 looks promising.
+```{r, echo = TRUE}
+NR.MLE(2.2,ll)
+
+NR.MLE(2.25,ll)
 ```
