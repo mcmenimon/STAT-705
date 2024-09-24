@@ -18,3 +18,8 @@ Log(products) vs sum(logs) is mathematically the same but not the same numerical
 
 
 For optimization, the optimized value is for what is best for the available data, not what theory says. Recall that everything in statistics, including the MLE is asymptotic. If you had infinite data, then the optimized value and the theoretical value should be the same. In reality, you have finite data, and potentially not even a lot of data, so the optimized value and the theoretical value could be quite different but the optimized value is what is best for what you have.
+
+
+For psuedorandom number generation, the generator produces a deterministic cyclic amount of numbers but the modulus m is chosen to be enormous so you never actually see the next period in the cycle and so never see that exact sequence of numbers again in order to maintain the appearance of randomness
+
+runif() is the workhorse of R because the other distributions can be generated from Uniform() due to change of variables and inverting the probability distribution. Need to read up on how this is done.
